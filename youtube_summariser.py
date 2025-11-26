@@ -106,7 +106,7 @@ def generate_tweet_content(transcript_text, video_url):
         f"1. Include **one specific, surprising technical fact** or insight from the text.\n"
         f"2. Do NOT use hashtags.\n"
         f"3. Do NOT include the URL in your generated text (I will add it later).\n"
-        f"4. The tone should be professional but intriguing. Sound like Andrej karpathy\n\n"
+        f"4. The tone should be professional but intriguing. Sound like Andrej karpathy. Make it sound simple so everyone will understand, dont write more than two well formed sentences.\n\n"
         f"Transcript:\n{transcript_text}\n\n"
         f"TWEET_OUTPUT_START:" # Enforce a clear start marker
     )
