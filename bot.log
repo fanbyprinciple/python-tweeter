@@ -1,0 +1,26 @@
+2025-11-26 23:57:34,713 - INFO - Processing: https://www.youtube.com/watch?v=lznmsF4-afA
+2025-11-26 23:57:34,713 - ERROR - Error fetching transcript for lznmsF4-afA: type object 'YouTubeTranscriptApi' has no attribute 'list_transcripts'
+2025-11-27 00:01:06,397 - INFO - Processing: https://www.youtube.com/watch?v=lznmsF4-afA
+2025-11-27 00:01:06,405 - ERROR - Error fetching transcript for lznmsF4-afA: type object 'YouTubeTranscriptApi' has no attribute 'list_transcripts'
+2025-11-27 00:01:40,017 - INFO - Processing: https://www.youtube.com/watch?v=lznmsF4-afA
+2025-11-27 00:01:40,017 - ERROR - Unexpected error fetching transcript for lznmsF4-afA: type object 'YouTubeTranscriptApi' has no attribute 'list_transcripts'
+2025-11-27 00:04:19,917 - INFO - Processing: https://www.youtube.com/watch?v=lznmsF4-afA
+2025-11-27 00:04:19,917 - ERROR - Unexpected error fetching transcript for lznmsF4-afA: type object 'YouTubeTranscriptApi' has no attribute 'get_transcript'
+2025-11-27 00:06:17,548 - INFO - Processing: https://www.youtube.com/watch?v=lznmsF4-afA
+2025-11-27 00:06:17,548 - ERROR - Unexpected error fetching transcript for lznmsF4-afA: type object 'YouTubeTranscriptApi' has no attribute 'get_transcript'
+2025-11-27 00:12:24,499 - INFO - Processing: https://www.youtube.com/watch?v=lznmsF4-afA
+2025-11-27 00:12:29,434 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-27 00:12:30,856 - INFO - Posted single tweet. ID: 1993752240491000029
+2025-11-27 00:12:30,856 - INFO - Successfully processed lznmsF4-afA
+2025-11-27 00:22:59,778 - INFO - Processing: https://www.youtube.com/watch?v=lznmsF4-afA
+2025-11-27 00:23:03,699 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 404 Not Found"
+2025-11-27 00:23:03,702 - ERROR - LLM Generation failed: Error code: 404 - {'error': {'message': 'No endpoints found for meta-llama/llama-3-8b-instruct:free.', 'code': 404}, 'user_id': 'user_360IccSeYBVHCl4I6mz0jwx0dPT'}
+2025-11-27 00:24:37,608 - INFO - Processing: https://www.youtube.com/watch?v=lznmsF4-afA
+2025-11-27 00:24:42,103 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-27 00:24:47,908 - WARNING - Final tweet body exceeded 280 chars (287). Truncating.
+2025-11-27 00:24:48,898 - INFO - Posted single tweet. ID: 1993755336013144282
+2025-11-27 00:24:48,898 - INFO - Successfully processed lznmsF4-afA
+2025-11-27 00:30:45,078 - INFO - Processing: https://www.youtube.com/watch?v=lznmsF4-afA
+2025-11-27 00:30:49,511 - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-11-27 00:30:57,395 - INFO - Posted single tweet. ID: 1993756881328984230
+2025-11-27 00:30:57,403 - INFO - Successfully processed lznmsF4-afA
