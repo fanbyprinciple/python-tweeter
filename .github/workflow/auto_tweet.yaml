@@ -1,17 +1,22 @@
 name: Auto Tweet YouTube Summary
 
 on:
-  schedule:
-    - cron: '0 * * * *'  # Run hourly; adjust as needed
   push:
     paths:
       - 'videos.txt'
+  
+  # 2. Allows manual runs from the 'Actions' tab for testing.
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   tweet_job:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -21,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install youtube-transcript-api openai tweepy pyyaml
+          pip install youtube-transcript-api openai tweepy pyyaml python-dotenv
 
       - name: Run YouTube Summarizer and Tweet
         env:
@@ -32,3 +37,10 @@ jobs:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
         run: python youtube_summarizer.py
+
+      - name: Commit Processed Log
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          # This saves the state so videos aren't tweeted twice
+          file_pattern: processed_videos.txt
+          commit_message: "Auto-Committed: Updated processed video log"
