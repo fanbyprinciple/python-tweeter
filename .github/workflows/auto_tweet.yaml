@@ -35,7 +35,7 @@ jobs:
           CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-        run: python youtube_summarizer.py
+        run: python youtube_summariser.py
 
       - name: Commit Processed Log
         uses: stefanzweifel/git-auto-commit-action@v5
