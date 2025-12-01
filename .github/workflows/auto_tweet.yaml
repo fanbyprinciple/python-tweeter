@@ -42,3 +42,7 @@ jobs:
         with:
           file_pattern: processed_videos.txt
           commit_message: "Auto-Committed: Updated processed video log"
+      
+      - name: Show bot log
+        if: always()
+        run: cat bot.log || true
