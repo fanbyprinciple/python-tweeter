@@ -4,8 +4,7 @@ on:
   push:
     paths:
       - 'videos.txt'
-  
-  # 2. Allows manual runs from the 'Actions' tab for testing.
+
   workflow_dispatch:
 
 permissions:
@@ -13,15 +12,15 @@ permissions:
 
 jobs:
   tweet_job:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04   # safer + avoids the Python-3.1 issue
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.10
+          python-version: '3.10'
 
       - name: Install dependencies
         run: |
@@ -41,6 +40,5 @@ jobs:
       - name: Commit Processed Log
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          # This saves the state so videos aren't tweeted twice
           file_pattern: processed_videos.txt
           commit_message: "Auto-Committed: Updated processed video log"
