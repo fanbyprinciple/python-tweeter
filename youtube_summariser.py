@@ -2,7 +2,7 @@ import re
 import yaml
 import os
 import logging
-import time # Added for safety margin between API calls
+import time
 from datetime import datetime
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
 from openai import OpenAI
@@ -24,11 +24,10 @@ logging.basicConfig(
 # Constants
 PROCESSED_FILE = "processed_videos.txt"
 TWEETS_FILE = "tweets.yaml"
-# Ensure this is defined
-MAX_TRANSCRIPT_CHARS = 15000  
+# Max characters of transcript to feed to the LLM (Good for cost control)
+MAX_TRANSCRIPT_CHARS = 15000 
 
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
-# Using a stable, well-performing free model or your paid preference
 OPENROUTER_MODEL = "x-ai/grok-4.1-fast:free" 
 
 # Initialize Clients
@@ -36,7 +35,7 @@ client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=OPENROUTER_API_KEY,
 )
-# Initialize the YouTube Transcript Client (Object-Oriented API required for 1.x.x)
+# Initialize the YouTube Transcript Client
 YTT_CLIENT = YouTubeTranscriptApi() 
 
 # --- Utility Functions ---
@@ -62,8 +61,9 @@ def extract_video_id(url):
 def get_transcript(video_id):
     """Fetches transcript using the modern object-oriented API calls."""
     try:
-        # 1. List available transcripts using the object's 'list' method
-        transcript_list = YTT_CLIENT.list(video_id) 
+        # 1. List available transcripts
+        # FIX: Changed the method call from .list() to .list_transcripts()
+        transcript_list = YTT_CLIENT.list_transcripts(video_id) 
         
         # 2. Find the best English transcript (Manual preferred over Generated)
         try:
@@ -78,9 +78,7 @@ def get_transcript(video_id):
 
         # 3. Fetch the actual text data
         lines = transcript.fetch()
-        
-        # NOTE: Using .to_raw_data() ensures compatibility across versions
-        full_text = " ".join([entry['text'] for entry in lines.to_raw_data()])
+        full_text = " ".join([entry['text'] for entry in lines]) 
         
         # 4. Truncate if too long to save cost/errors
         if len(full_text) > MAX_TRANSCRIPT_CHARS:
@@ -106,9 +104,9 @@ def generate_tweet_content(transcript_text, video_url):
         f"1. Include **one specific, surprising technical fact** or insight from the text.\n"
         f"2. Do NOT use hashtags.\n"
         f"3. Do NOT include the URL in your generated text (I will add it later).\n"
-        f"4. The tone should be professional but intriguing. Sound like Andrej karpathy. Make it sound simple so everyone will understand, dont write more than two well formed sentences.\n\n"
+        f"4. The tone should be professional but intriguing. Sound like Andrej Karpathy. Make it sound simple so everyone will understand, don't write more than two well formed sentences.\n\n"
         f"Transcript:\n{transcript_text}\n\n"
-        f"TWEET_OUTPUT_START:" # Enforce a clear start marker
+        f"TWEET_OUTPUT_START:"
     )
 
     try:
@@ -118,7 +116,7 @@ def generate_tweet_content(transcript_text, video_url):
                 {"role": "system", "content": "You are a helpful assistant that writes viral tweets."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=100, # Increased tokens for a full summary, fact, and intro
+            max_tokens=100, 
             temperature=0.7,
         )
         
@@ -126,7 +124,6 @@ def generate_tweet_content(transcript_text, video_url):
         
         # Clean up output
         tweet_body = tweet_body.replace("TWEET_OUTPUT_START:", "").strip()
-        # Clean up if LLM wrapped it in quotes
         if tweet_body.startswith('"') and tweet_body.endswith('"'):
             tweet_body = tweet_body[1:-1]
             
@@ -134,16 +131,20 @@ def generate_tweet_content(transcript_text, video_url):
             logging.warning("LLM returned an empty string for the tweet body.")
             tweet_body = "A must-watch deep dive into the latest tech topic!"
 
-        # Construct final tweet with URL
+        # Construct final tweet with URL. Twitter shortens the URL to 23 chars.
         final_tweet = f"{tweet_body} {video_url}"
         
-        # Final safety check for character limit (280 max)
+        # Safety check: Total tweet length must be <= 280 characters.
         if len(final_tweet) > 280:
-             logging.warning(f"Final tweet body exceeded 280 chars ({len(final_tweet)}). Truncating.")
-             # Truncate the tweet body to make room for the URL and 'Watch here' (approx 30 chars for link/text)
-             trunc_length = 280 - len(f"\n\nWatch here: {video_url}") - 5 # extra safety margin
-             tweet_body = tweet_body[:trunc_length] + "..."
-             final_tweet = f"{tweet_body}\n\nWatch here: {video_url}"
+            # Max characters for tweet body = 280 - (URL length + 1 space) 
+            # Assuming worst case of 280-24 = 256 for the body
+            max_body_length = 256 
+            
+            if len(tweet_body) > max_body_length:
+                logging.warning(f"Tweet body generated too long ({len(tweet_body)} chars). Truncating.")
+                # Truncate and add ellipsis
+                tweet_body = tweet_body[:max_body_length - 3] + "..."
+                final_tweet = f"{tweet_body} {video_url}"
 
         return final_tweet
 
@@ -183,13 +184,11 @@ def post_to_twitter(tweet_text):
             access_token_secret=os.environ["ACCESS_TOKEN_SECRET"],
         )
         
-        # This posting logic assumes a single tweet. The text is pre-checked for length.
         resp = client_v2.create_tweet(text=tweet_text)
         logging.info(f"Posted single tweet. ID: {resp.data['id']}")
             
         return True
     except Exception as e:
-        # Catch authentication, duplicate status, or network errors
         logging.error(f"Twitter API Error: {e}")
         return False
 
@@ -231,9 +230,12 @@ def main():
         # 3. Save to YAML (Backup)
         save_tweet_to_yaml(tweet_content)
 
-        # 4. Post to Twitter
-        success = post_to_twitter(tweet_content)
+        # 4. Post to Twitter (Only uncomment this line when ready to post)
+        # success = post_to_twitter(tweet_content) 
+        # For debugging, we assume success to mark the video as processed unless post_to_twitter is enabled.
         
+        success = True # Assume success for logging/testing purposes if post_to_twitter is commented out.
+
         # 5. Mark as processed only if posting succeeded
         if success:
             mark_video_as_processed(video_id)
