@@ -2,9 +2,10 @@ name: Auto Tweet YouTube Summary
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'videos.txt'
-
+      - "videos.txt"
   workflow_dispatch:
 
 permissions:
@@ -12,22 +13,28 @@ permissions:
 
 jobs:
   tweet_job:
-    runs-on: ubuntu-22.04   # safer + avoids the Python-3.1 issue
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Show changed files debug
+        run: |
+          echo "Changed files in this commit:"
+          git diff --name-only HEAD^ HEAD || true
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install youtube-transcript-api openai tweepy pyyaml python-dotenv
 
-      - name: Run YouTube Summarizer and Tweet
+      - name: Run YouTube Summariser
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -35,14 +42,20 @@ jobs:
           CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-        run: python youtube_summariser.py
+        run: |
+          echo "Running youtube_summariser.py..."
+          python youtube_summariser.py
+        continue-on-error: false
 
-      - name: Commit Processed Log
+      - name: Print bot.log
+        if: always()
+        run: |
+          echo "===== BOT LOG START ====="
+          cat bot.log || echo "bot.log not found."
+          echo "===== BOT LOG END ====="
+
+      - name: Commit processed_videos.txt
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           file_pattern: processed_videos.txt
-          commit_message: "Auto-Committed: Updated processed video log"
-      
-      - name: Show bot log
-        if: always()
-        run: cat bot.log || true
+          commit_message: "Auto: updated processed videos log"
